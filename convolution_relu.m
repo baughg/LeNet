@@ -33,5 +33,7 @@ for f = 1:Fo
     layer1(:,:,f) = layer1(:,:,f) + bias0_1(f);
     layer1(:,:,f) = layer1(:,:,f) .* double(layer1(:,:,f) > 0); % relu
 end
+
+layer1 = squeeze(layer1);
 end
 

@@ -65,7 +65,18 @@ fid = fopen('layer3.bin','rb');
 layer3_ref = read_array(fid,10,10,16,1);
 fclose(fid);
 
+% max pool layer 3
+layer4 = max_pool( layer3 );
 
+fid = fopen('layer4.bin','rb');
+layer4_ref = read_array(fid,5,5,16,1);
+fclose(fid);
 
+% layer 4 convolution
+layer5 = convolution_relu( layer4, weight4_5, bias4_5, 0 );
+
+fid = fopen('layer5.bin','rb');
+layer5_ref = read_array(fid,1,1,120,1);
+fclose(fid);
 
 
