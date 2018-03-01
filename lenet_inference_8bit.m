@@ -1,4 +1,4 @@
-input_image = imread('three.png');
+input_image = imread('eight.png');
 
 input_image = uint8(rgb2gray(input_image));
 
@@ -29,19 +29,37 @@ bias4_5 = fread(fid,120,'float64');
 bias5_6 = fread(fid,10,'float64');
 fclose(fid);
 
+scale_factor = 127;
+
+input_image = quantise_array(input_image,scale_factor);
+weight0_1 = quantise_array(weight0_1,scale_factor);
+weight2_3 = quantise_array(weight2_3,scale_factor);
+weight4_5 = quantise_array(weight4_5,scale_factor);
+weight5_6 = quantise_array(weight5_6,scale_factor);
+bias0_1 = quantise_array(bias0_1,scale_factor);
+bias2_3 = quantise_array(bias2_3,scale_factor);
+bias4_5 = quantise_array(bias4_5,scale_factor);
+bias5_6 = quantise_array(bias5_6,scale_factor);
+
 
 % layer 1 convolution
 layer1 = convolution_relu( input_image, weight0_1, bias0_1, 1 );
+layer1 = scale_and_quantise(layer1);
 % max pool layer 1
 layer2 = max_pool( layer1 );
 % layer 2 convolution
 layer3 = convolution_relu( layer2, weight2_3, bias2_3, 0 );
+layer3 = scale_and_quantise(layer3);
 % max pool layer 3
 layer4 = max_pool( layer3 );
 % layer 4 convolution
 layer5 = convolution_relu( layer4, weight4_5, bias4_5, 0 );
+layer5 = scale_and_quantise(layer5);
 
-output = sum(repmat(layer5',10,1) .* weight5_6, 2);
+dot_prod = repmat(layer5',10,1) .* weight5_6;
+dot_prod = scale_and_quantise(dot_prod);
+
+output = sum(dot_prod, 2);
 output = output + bias5_6;
 output = output .* double(output > 0); % relu;
 
