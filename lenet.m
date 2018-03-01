@@ -79,4 +79,8 @@ fid = fopen('layer5.bin','rb');
 layer5_ref = read_array(fid,1,1,120,1);
 fclose(fid);
 
+output = sum(repmat(layer5',10,1) .* weight5_6, 2);
+output = output + bias5_6;
+output = output .* double(output > 0); % relu;
+output = output ./ sum(output);
 
