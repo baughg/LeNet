@@ -1,4 +1,4 @@
-input_image = imread('test_data/one.png');
+input_image = imread('test_data/three.png');
 
 input_image = uint8(rgb2gray(input_image));
 
@@ -9,6 +9,11 @@ image(input_image); axis image; axis off; colormap(gray(256));
 input_image = double(input_image);
 input_mean = mean(input_image(:));
 input_std = std(input_image(:));
+
+fid = fopen('test_data_8bit/input_i8.bin','wb');
+out = int8(input_image');
+fwrite(fid,out(:),'int8');
+fclose(fid);
 
 input_image = input_image - input_mean;
 input_image = input_image ./ input_std;
@@ -31,7 +36,7 @@ fclose(fid);
 
 scale_factor = 127;
 
-input_image = quantise_array(input_image,scale_factor);
+input_image = scale_and_quantise(input_image);
 weight0_1 = quantise_array(weight0_1,scale_factor);
 weight2_3 = quantise_array(weight2_3,scale_factor);
 weight4_5 = quantise_array(weight4_5,scale_factor);
@@ -40,6 +45,7 @@ bias0_1 = quantise_array(bias0_1,scale_factor);
 bias2_3 = quantise_array(bias2_3,scale_factor);
 bias4_5 = quantise_array(bias4_5,scale_factor);
 bias5_6 = quantise_array(bias5_6,scale_factor);
+
 
 
 % layer 1 convolution
