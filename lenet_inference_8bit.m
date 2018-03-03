@@ -1,4 +1,4 @@
-input_image = imread('test_data/three.png');
+input_image = imread('test_data/six.png');
 
 input_image = uint8(rgb2gray(input_image));
 
