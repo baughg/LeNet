@@ -7,6 +7,14 @@
 #include <stdint.h>
 #include <vector>
 
+typedef struct weight_header
+{
+  unsigned X;
+  unsigned Y;
+  unsigned Z;
+  unsigned weights;
+}weight_header;
+
 void sparsify(
   uint8_t* p_data,
   uint32_t len,
@@ -23,6 +31,8 @@ void build_storage_elements_XYZ(
   std::vector<uint32_t> &storage_element_relative_address,
   std::vector<uint32_t> &sparse_map_relative_address);
 
+void write_to_file(std::vector<uint8_t> &data, std::string filename);
+void write_to_file_u32(std::vector<uint32_t> &data, std::string filename);
 
 int main(int argc, char** argv)
 {
@@ -34,16 +44,28 @@ int main(int argc, char** argv)
 
   std::vector<uint8_t> buffer;
 
-  uint32_t X = 28;
-  uint32_t Y = 28;
+  uint32_t X = 25;
+  uint32_t Y = 6;
   std::string root_dir(argv[1]);
   std::string binary_filename = root_dir;
-  binary_filename.append("input_i8.bin");
+  std::string output_prefix = "weight0_1";
+
+  binary_filename.append(output_prefix + "_i8.bin");
   buffer.resize(X * Y);
   FILE* input_file = NULL;
   input_file = fopen(binary_filename.c_str(), "rb");
 
+  weight_header wght_header;
+  unsigned points = 0;
+
   if (input_file) {
+    fread(&wght_header, sizeof(wght_header), 1, input_file);
+    X = wght_header.X * wght_header.Y;
+    Y = wght_header.Z;
+    points = wght_header.X * wght_header.Y * wght_header.Z;
+    points *= wght_header.weights;
+
+    buffer.resize(points);
     fread(&buffer[0], 1, buffer.size(), input_file);
     fclose(input_file);
     std::vector<uint8_t> packed_data;
@@ -55,13 +77,25 @@ int main(int argc, char** argv)
       buffer, 
       X, 
       Y, 
-      1, 
+      wght_header.weights,
       packed_data, 
       sparsity_map,
       storage_element_relative_address,
       sparse_map_relative_address);
 
-   
+    
+    std::string filename = root_dir;
+    filename.append(output_prefix + "_packed_data_i8.bin");
+    write_to_file(packed_data, filename);
+    filename = root_dir;
+    filename.append(output_prefix + "_sparsity_map_i8.bin");
+    write_to_file(sparsity_map, filename);
+    filename = root_dir;
+    filename.append(output_prefix + "_se_data_address_i8.bin");
+    write_to_file_u32(storage_element_relative_address, filename);
+    filename = root_dir;
+    filename.append(output_prefix + "_se_sparsity_address_i8.bin");
+    write_to_file_u32(sparse_map_relative_address, filename);
   }
   return 0;
 }
@@ -175,5 +209,29 @@ void build_storage_elements_XYZ(
     {
       storage_element_relative_address[t] = addr_non_zero;
     }
+  }
+}
+
+void write_to_file(std::vector<uint8_t> &data, std::string filename)
+{
+  FILE* file = NULL;
+
+  file = fopen(filename.c_str(), "wb");
+
+  if (file) {
+    fwrite(&data[0], 1, data.size(), file);
+    fclose(file);
+  }
+}
+
+void write_to_file_u32(std::vector<uint32_t> &data, std::string filename)
+{
+  FILE* file = NULL;
+
+  file = fopen(filename.c_str(), "wb");
+
+  if (file) {
+    fwrite(&data[0], sizeof(uint32_t), data.size(), file);
+    fclose(file);
   }
 }
