@@ -1,4 +1,4 @@
-input_image = imread('test_data/seven.png');
+input_image = imread('test_data/six.png');
 
 input_image = uint8(rgb2gray(input_image));
 
@@ -34,7 +34,7 @@ fclose(fid);
 
 scale_factor = 127;
 
-input_image = scale_and_quantise(input_image);
+input_image = quantise_array(input_image,scale_factor);
 
 fid = fopen('test_data_8bit/input_i8.bin','wb');
 out = int8(input_image');
