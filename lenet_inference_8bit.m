@@ -34,8 +34,8 @@ fclose(fid);
 
 scale_factor = 127;
 
-input_image = quantise_array(input_image,scale_factor);
-
+% input_image = quantise_array(input_image,scale_factor);
+input_image = scale_and_quantise_max(input_image);
 fid = fopen('test_data_8bit/input_i8.bin','wb');
 out = int8(input_image');
 fwrite(fid,out(:),'int8');
@@ -49,6 +49,9 @@ bias0_1 = quantise_array(bias0_1,scale_factor);
 bias2_3 = quantise_array(bias2_3,scale_factor);
 bias4_5 = quantise_array(bias4_5,scale_factor);
 bias5_6 = quantise_array(bias5_6,scale_factor);
+
+write_array('test_data_8bit/bias0_1_i8.bin',bias0_1 );
+write_array('test_data_8bit/bias2_3_i8.bin',bias2_3 );
 
 write_array('test_data_8bit/weight0_1_i8.bin',weight0_1 );
 write_array('test_data_8bit/weight2_3_i8.bin',weight2_3 );
