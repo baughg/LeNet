@@ -76,16 +76,16 @@ int main(int argc, char** argv)
 void densify_weights_zxy(std::string root_dir)
 {
   std::vector<uint8_t> buffer;
-  std::string output_prefix = "output";
+  std::string output_prefix = "output_c";
 
   const static uint32_t SE_OUTPUT = 64;
   //const static uint32_t H = 28;
   //const static uint32_t W = 28;
   const static uint32_t H = 28;
   const static uint32_t W = 28;
-  const static uint32_t Ho = 14;
-  const static uint32_t Wo = 14;
-#define OUTPUT_CHANNELS 6
+  const static uint32_t Ho = 1;
+  const static uint32_t Wo = 1;
+#define OUTPUT_CHANNELS 120
 
   uint8_t output_data[16][16 * SE_OUTPUT];
   uint8_t output_sparse_map[16][2 * SE_OUTPUT];
@@ -204,7 +204,7 @@ void sparsify_weights_xyz(std::string root_dir)
   uint32_t Y = 6;
   
   std::string binary_filename = root_dir;
-  std::string output_prefix = "bias2_3";
+  std::string output_prefix = "bias4_5";
 
   binary_filename.append(output_prefix + "_i8.bin");
   buffer.resize(X * Y);
@@ -400,7 +400,7 @@ void sparsify_weights_zxy(std::string root_dir)
   uint32_t Y = 6;
 
   std::string binary_filename = root_dir;
-  std::string output_prefix = "weight2_3";
+  std::string output_prefix = "bias4_5";
 
   binary_filename.append(output_prefix + "_i8.bin");
   buffer.resize(X * Y);

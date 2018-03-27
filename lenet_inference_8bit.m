@@ -52,6 +52,8 @@ bias5_6 = quantise_array(bias5_6,scale_factor);
 
 write_array('test_data_8bit/bias0_1_i8.bin',bias0_1 );
 write_array('test_data_8bit/bias2_3_i8.bin',bias2_3 );
+write_array('test_data_8bit/bias4_5_i8.bin',bias4_5 );
+write_array('test_data_8bit/bias5_6_i8.bin',bias5_6 );
 
 write_array('test_data_8bit/weight0_1_i8.bin',weight0_1 );
 write_array('test_data_8bit/weight2_3_i8.bin',weight2_3 );
