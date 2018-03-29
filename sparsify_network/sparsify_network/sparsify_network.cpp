@@ -41,7 +41,9 @@ void write_to_file(std::vector<uint8_t> &data, std::string filename);
 void write_to_file_u32(std::vector<uint32_t> &data, std::string filename);
 void densify_weights_zxy(std::string root_dir);
 void sparsify_weights_xyz(std::string root_dir);
+void sparsify_input_xyz(std::string root_dir);
 void sparsify_weights_zxy(std::string root_dir);
+void sparsify_weights_fc_zxy(std::string root_dir);
 
 int main(int argc, char** argv)
 {
@@ -59,6 +61,10 @@ int main(int argc, char** argv)
       mode = 1;
     else if (strcmp(argv[2], "zxy") == 0)
       mode = 2;
+    else if (strcmp(argv[2], "fc_zxy") == 0)
+      mode = 3;
+    else if (strcmp(argv[2], "input") == 0)
+      mode = 4;
   }
 
   std::string root_dir(argv[1]);
@@ -69,6 +75,10 @@ int main(int argc, char** argv)
     densify_weights_zxy(root_dir);
   else if(mode == 2)
     sparsify_weights_zxy(root_dir);
+  else if (mode == 3)
+    sparsify_weights_fc_zxy(root_dir);
+  if (mode == 4)
+    sparsify_input_xyz(root_dir);
 
   return 0;
 }
@@ -204,7 +214,7 @@ void sparsify_weights_xyz(std::string root_dir)
   uint32_t Y = 6;
   
   std::string binary_filename = root_dir;
-  std::string output_prefix = "bias4_5";
+  std::string output_prefix = "bias5_6";
 
   binary_filename.append(output_prefix + "_i8.bin");
   buffer.resize(X * Y);
@@ -400,7 +410,7 @@ void sparsify_weights_zxy(std::string root_dir)
   uint32_t Y = 6;
 
   std::string binary_filename = root_dir;
-  std::string output_prefix = "bias4_5";
+  std::string output_prefix = "weight5_6";
 
   binary_filename.append(output_prefix + "_i8.bin");
   buffer.resize(X * Y);
@@ -459,6 +469,148 @@ void sparsify_weights_zxy(std::string root_dir)
       channels,
       channel_size,
       weight_sets,
+      packed_data,
+      sparsity_map,
+      storage_element_relative_address,
+      sparse_map_relative_address);
+
+
+    std::string filename = root_dir;
+    filename.append(output_prefix + "_packed_data_i8.bin");
+    write_to_file(packed_data, filename);
+    filename = root_dir;
+    filename.append(output_prefix + "_sparsity_map_i8.bin");
+    write_to_file(sparsity_map, filename);
+    filename = root_dir;
+    filename.append(output_prefix + "_se_data_address_i8.bin");
+    write_to_file_u32(storage_element_relative_address, filename);
+    filename = root_dir;
+    filename.append(output_prefix + "_se_sparsity_address_i8.bin");
+    write_to_file_u32(sparse_map_relative_address, filename);
+  }
+}
+
+void sparsify_weights_fc_zxy(std::string root_dir)
+{
+  std::vector<uint8_t> buffer;
+  std::vector<uint8_t> buffer_zxy;
+
+  uint32_t X = 25;
+  uint32_t Y = 6;
+
+  std::string binary_filename = root_dir;
+  std::string output_prefix = "weight5_6";
+
+  binary_filename.append(output_prefix + "_i8.bin");
+  buffer.resize(X * Y);
+  FILE* input_file = NULL;
+  input_file = fopen(binary_filename.c_str(), "rb");
+
+  weight_header wght_header;
+  unsigned points = 0;
+
+  if (input_file) {
+    fread(&wght_header, sizeof(wght_header), 1, input_file);
+    X = wght_header.X * wght_header.Y;
+    Y = wght_header.Z;
+    points = wght_header.X * wght_header.Y * wght_header.Z;
+    points *= wght_header.weights;
+
+    buffer.resize(points);
+    fread(&buffer[0], 1, buffer.size(), input_file);
+    fclose(input_file);
+    std::vector<uint8_t> packed_data;
+    std::vector<uint8_t> sparsity_map;
+    std::vector<uint32_t> storage_element_relative_address;
+    std::vector<uint32_t> sparse_map_relative_address;
+
+    buffer_zxy.resize(buffer.size());
+    uint8_t* p_buffer = &buffer[0];
+    uint8_t* p_weight_set = p_buffer;
+    uint8_t* p_buffer_zxy = &buffer_zxy[0];
+    uint8_t* p_weight_set_zxy = p_buffer_zxy;
+    uint32_t channel_size = wght_header.weights * wght_header.Z;
+    uint32_t channels = wght_header.Y;
+    uint32_t weight_set_size = channel_size * channels;
+    uint32_t weight_sets = wght_header.X;
+    uint32_t channel_set_size = channel_size * weight_sets;
+    uint32_t offset = 0;
+
+    /*for (uint32_t ws = 0; ws < weight_sets; ++ws)
+    {
+      p_weight_set_zxy = p_buffer_zxy + ws * weight_set_size;
+
+      for (uint32_t c = 0; c < channels; ++c) {
+        p_weight_set = p_buffer + ws * channel_size + c * channel_set_size;
+
+        for (uint32_t e = 0; e < channel_size; ++e)
+        {
+          offset = e * channels + c;
+          p_weight_set_zxy[offset] = p_weight_set[e];
+        }
+
+        p_weight_set += channel_size;
+      }
+    }*/
+
+    build_storage_elements_XYZ(
+      buffer,
+      channels,
+      channel_size,
+      weight_sets,
+      packed_data,
+      sparsity_map,
+      storage_element_relative_address,
+      sparse_map_relative_address);
+
+
+    std::string filename = root_dir;
+    filename.append(output_prefix + "_packed_data_i8.bin");
+    write_to_file(packed_data, filename);
+    filename = root_dir;
+    filename.append(output_prefix + "_sparsity_map_i8.bin");
+    write_to_file(sparsity_map, filename);
+    filename = root_dir;
+    filename.append(output_prefix + "_se_data_address_i8.bin");
+    write_to_file_u32(storage_element_relative_address, filename);
+    filename = root_dir;
+    filename.append(output_prefix + "_se_sparsity_address_i8.bin");
+    write_to_file_u32(sparse_map_relative_address, filename);
+  }
+}
+
+
+void sparsify_input_xyz(std::string root_dir)
+{
+  std::vector<uint8_t> buffer;
+
+  uint32_t X = 28;
+  uint32_t Y = 28;
+
+  std::string binary_filename = root_dir;
+  std::string output_prefix = "input";
+
+  binary_filename.append(output_prefix + "_i8.bin");
+  buffer.resize(X * Y);
+  FILE* input_file = NULL;
+  input_file = fopen(binary_filename.c_str(), "rb");
+
+
+  unsigned points = 0;
+
+  if (input_file) {    
+    fread(&buffer[0], 1, buffer.size(), input_file);
+    fclose(input_file);
+    std::vector<uint8_t> packed_data;
+    std::vector<uint8_t> sparsity_map;
+    std::vector<uint32_t> storage_element_relative_address;
+    std::vector<uint32_t> sparse_map_relative_address;
+
+    build_storage_elements_XYZ(
+      buffer,
+      X,
+      Y,
+      1,
       packed_data,
       sparsity_map,
       storage_element_relative_address,
