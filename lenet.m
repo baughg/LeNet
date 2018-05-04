@@ -87,7 +87,35 @@ fid = fopen('output.bin','rb');
 output_ref = read_array(fid,1,1,10,1);
 fclose(fid);
 
-output = output ./ sum(output);
+% output = output ./ sum(output);
 
+e = repmat(output_ref,1,10);
+res = sum(exp(e - e'),1);
+loss_out = 1 ./ res;
+inner_out = -sum(loss_out .* loss_out);
+label = 5;
+label = label + 1;
 
+inner_out = inner_out + loss_out(label);
+label_sel = zeros(size(output'));
+label_sel(label) = 1;
+
+output_error = loss_out .* (label_sel - loss_out - inner_out);
+
+% Layer 5
+[X,Y,Co,Ci] = size(weight5_6);
+
+l5_err = repmat(output_error',1,Y) .* weight5_6;
+layer5_error = sum(l5_err,1);
+layer5_error(layer5 <= 0) = 0;
+
+deltas_bias5_6 = zeros(size(bias5_6'));
+deltas_bias5_6 = deltas_bias5_6 + output_error;
+
+deltas_weight5_6 = repmat(output_error,Y,1) .* repmat(layer5,1,X);
+deltas_weight5_6 = deltas_weight5_6';
+
+% convolution_backward
+layer5_err(1,1,:) = squeeze(layer5_error);
+layer4_error = convolution_backward_full( weight4_5, layer5_err );
 

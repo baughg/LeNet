@@ -42,7 +42,7 @@ void write_to_file_u32(std::vector<uint32_t> &data, std::string filename);
 void densify_weights_zxy(std::string root_dir);
 void sparsify_weights_xyz(std::string root_dir);
 void sparsify_input_xyz(std::string root_dir);
-void sparsify_weights_zxy(std::string root_dir);
+void sparsify_weights_zxy(std::string root_dir, std::string output_prefix);
 void sparsify_weights_fc_zxy(std::string root_dir);
 
 int main(int argc, char** argv)
@@ -74,7 +74,7 @@ int main(int argc, char** argv)
   else if(mode == 1)
     densify_weights_zxy(root_dir);
   else if(mode == 2)
-    sparsify_weights_zxy(root_dir);
+    sparsify_weights_zxy(root_dir,"weight1_0");
   else if (mode == 3)
     sparsify_weights_fc_zxy(root_dir);
   if (mode == 4)
@@ -401,7 +401,7 @@ void write_to_file_u32(std::vector<uint32_t> &data, std::string filename)
   }
 }
 
-void sparsify_weights_zxy(std::string root_dir)
+void sparsify_weights_zxy(std::string root_dir, std::string output_prefix)
 {
   std::vector<uint8_t> buffer;
   std::vector<uint8_t> buffer_zxy;
@@ -410,7 +410,7 @@ void sparsify_weights_zxy(std::string root_dir)
   uint32_t Y = 6;
 
   std::string binary_filename = root_dir;
-  std::string output_prefix = "weight5_6";
+  //std::string output_prefix = "weight5_6";
 
   binary_filename.append(output_prefix + "_i8.bin");
   buffer.resize(X * Y);
