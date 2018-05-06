@@ -89,7 +89,7 @@ fclose(fid);
 
 % output = output ./ sum(output);
 
-e = repmat(output_ref,1,10);
+e = repmat(output,1,10);
 res = sum(exp(e - e'),1);
 loss_out = 1 ./ res;
 inner_out = -sum(loss_out .* loss_out);
@@ -117,5 +117,7 @@ deltas_weight5_6 = deltas_weight5_6';
 
 % convolution_backward
 layer5_err(1,1,:) = squeeze(layer5_error);
-layer4_error = convolution_backward_full( weight4_5, layer5_err );
+deltas_bias4_5 = zeros(size(bias4_5'));
+deltas_bias4_5 = deltas_bias4_5 + layer5_error;
+[layer4_error,deltas_weight4_5] = convolution_backward_full( weight4_5, layer5_err, layer4 );
 
