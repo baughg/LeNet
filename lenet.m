@@ -117,7 +117,12 @@ deltas_weight5_6 = deltas_weight5_6';
 
 % convolution_backward
 layer5_err(1,1,:) = squeeze(layer5_error);
-deltas_bias4_5 = zeros(size(bias4_5'));
-deltas_bias4_5 = deltas_bias4_5 + layer5_error;
-[layer4_error,deltas_weight4_5] = convolution_backward_full( weight4_5, layer5_err, layer4 );
+deltas_bias4_5 = layer5_error;
+[layer4_error,deltas_weight4_5, deltas_bias4_5] = convolution_backward_full( weight4_5, layer5_err, layer4 );
+layer3_error = subsamp_max_backward(layer3,layer4_error);
+
+
+
+
+
 
